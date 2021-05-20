@@ -383,3 +383,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 .vscode
+
+.ipynb_checkpoints
