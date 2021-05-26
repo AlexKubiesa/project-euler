@@ -61,9 +61,9 @@ func (sieve Sieve) IsPrime(x int) bool {
 	return sieve[-x]
 }
 
-// Creates a Sieve of Erastothenes up to the given number. The sieve has length (max + 1) and
+// Creates a Sieve of Eratosthenes up to the given number. The sieve has length (max + 1) and
 // records the primality of the numbers 0 to max.
-func SieveOfErastothenes(max int) *Sieve {
+func SieveOfEratosthenes(max int) *Sieve {
 	// Allocate sieve.
 	sieve := Sieve(make([]bool, max+1))
 	// Initialise values to true for i >= 2.
@@ -126,7 +126,7 @@ func BestFormula(sieve *Sieve) Formula {
 // Streak: 71
 
 func main() {
-	sieve := SieveOfErastothenes(SieveSize)
+	sieve := SieveOfEratosthenes(SieveSize)
 	f := BestFormula(sieve)
 	fmt.Printf("Best formula: %v\n", f)
 	fmt.Printf("Product of coefficients: %v\n", f.a*f.b)

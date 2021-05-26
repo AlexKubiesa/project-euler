@@ -30,9 +30,9 @@ const DigitIndicesArraySize = 64
 // A prime number sieve, where the value at index i says whether i is prime. 0 and 1 are not prime.
 type Sieve []bool
 
-// Creates a Sieve of Erastothenes up to the given number. The sieve has length (max + 1) and
+// Creates a Sieve of Eratosthenes up to the given number. The sieve has length (max + 1) and
 // records the primality of the numbers 0 to max.
-func SieveOfErastothenes(max int) *Sieve {
+func SieveOfEratosthenes(max int) *Sieve {
 	// Allocate sieve.
 	sieve := Sieve(make([]bool, max+1))
 	// Initialise values to true for i >= 2.
@@ -192,7 +192,7 @@ func GetTargetFamilySize() int {
 
 func main() {
 	targetFamilySize := GetTargetFamilySize()
-	sieve := SieveOfErastothenes(SieveSize)
+	sieve := SieveOfEratosthenes(SieveSize)
 	for n := 1; ; n++ {
 		familySize := GetMaxPrimeFamilySize(n, sieve)
 		if familySize >= targetFamilySize {
