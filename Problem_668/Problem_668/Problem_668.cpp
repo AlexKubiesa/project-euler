@@ -6,97 +6,57 @@
 #include <algorithm>
 #include <numeric>
 #include <cassert>
+#include <string>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/algorithm/minmax.hpp>
+#include "primesieve.hpp"
 
-// Returns a sieve of Eratosthenes up to and including the given number.
-std::vector<bool> sieveOfEratosthenes(int max)
+// Analysis:
+// =========
+// We want to count all the square root smooth numbers from 1 to N = 10,000,000,000.
+//
+// Claim: A number n is *not* square root smooth if and only if n = pm with p prime
+//     and p >= m. Moreover, given n, p is unique.
+//
+// Proof:
+//     Suppose n is not square root smooth. Then n = pm with p >= sqrt(n) = sqrt(pm)
+//     -> p^2 >= pm -> p >= m. Similarly, if p >= m then p^2 >= pm = n, so p >= sqrt(n).
+//     
+//     Now suppose n = p1*m1 = p2*m2. Suppose for contradiction that p1 != p2. Then
+//     n = p1*p2*m, p1 >= sqrt(n), p2 >= sqrt(n). WLOG p1 > sqrt(n) (else p1 = p2).
+//     Then n = p1*p2*m > sqrt(n)*sqrt(n)*m = nm, a contradiction. Hence p1 = p2.
+//
+//     QED.
+//
+// This means that to enumerate the non-square-root-smooth numbers, we just need to make
+// a list of primes p and then count p, 2*p, 3*p, ..., p*p for each one. If p <= sqrt(N),
+// then all of p, 2*p, ..., p*p are relevant. If p > sqrt(N), then only p, 2*p, ..., k*p
+// are relevant, where k = floor(N/p).
+
+using boost::multiprecision::uint128_t;
+
+// Counts numbers that are *not* square root smooth, up to the given limit. Requires
+// a list of primes up to max.
+uint128_t countNonSquareRootSmoothNumbers(uint64_t max, const std::vector<uint64_t>& primes)
 {
-    // Mark all numbers prime by default.
-    std::vector<bool> sieve(max + 1, true);
+    uint128_t count = 0;
 
-    // Mark 0 and 1 as not prime.
-    sieve[0] = false;
-    sieve[1] = false;
-
-    const auto maxPrime = (int)std::sqrt(max);
-    for (int n = 2; n <= maxPrime; ++n)
+    for (const auto prime : primes)
     {
-        // If n is already composite, continue.
-        if (!sieve[n])
-            continue;
-
-        // If n is prime, mark all multiples of n as composite. We only need
-        // to consider multiple from n^2 onwards, because lower multiples of
-        // n have already been marked as composite.
-        for (auto m = n * n; m <= max; m += n)
-        {
-            sieve[m] = false;
-        }
-    }
-
-    return sieve;
-}
-
-// Gets the primes less than or equal to the given number.
-std::vector<int> getPrimes(int max)
-{
-    std::vector<int> primes;
-
-    const auto sieve = sieveOfEratosthenes(max);
-    for (int i = 0; i <= max; ++i)
-    {
-        if (sieve[i])
-            primes.push_back(i);
-    }
-
-    return primes;
-}
-
-// Determines whether the number n is square root smooth. Requires a list of primes up to
-// sqrt(n) (exclusive) or more.
-bool isSquareRootSmooth(int64_t n, const std::vector<int>& primes)
-{
-    const auto maxPrime = (int)std::ceil(std::sqrt(n)) - 1;
-
-    if (n == 1)
-        return true;
-
-    // Loop through all primes strictly less than sqrt(n).
-    for (auto prime : primes)
-    {
-        // If the prime is too large, that means we've exhaused the primes less
-        // than sqrt(n) and n is still not 1, so n is not square root smooth.
-        if (prime > maxPrime)
-            return false;
-
-        // Divide n by the current prime as much as possible.
-        while (n % prime == 0)
-            n /= prime;
-
-        // If n has been reduced to 1, that means it was composed of only primes
-        // less than sqrt(n), i.e. n was square root smooth.
-        if (n == 1)
-            return true;
-    }
-
-    // Assume that the next prime in the list would have been at least sqrt(n),
-    // which means n is not square root smooth.
-    return false;
-}
-
-int countSquareRootSmoothNumbers(int64_t max, const std::vector<int>& primes)
-{
-    int count = 0;
-
-    for (int64_t n = 1; n <= max; ++n)
-    {
-        if (isSquareRootSmooth(n, primes))
-            ++count;
-
-        if (n % 1'000'000 == 0)
-            std::cout << "Processed up to " << n << std::endl;
+        const auto countForThisPrime = std::min(prime, max / prime);
+        count += countForThisPrime;
     }
 
     return count;
+}
+
+// Counts the square root smooth numbers up to the given limit. Requires a list of
+// primes up to max.
+uint128_t countSquareRootSmoothNumbers(uint64_t max, const std::vector<uint64_t>& primes)
+{
+    // It's easier to count the non-square-root-smooth numbers and subtract that from the
+    // total, rather than counting square root smooth numbers directly.
+    return max - countNonSquareRootSmoothNumbers(max, primes);
 }
 
 int main()
@@ -105,13 +65,13 @@ int main()
     {
         std::cout << "Upper bound: ";
 
-        int64_t max;
+        uint64_t max;
         std::cin >> max;
 
-        const auto maxPrime = (int)std::ceil(std::sqrt(max)) - 1;
-        const auto primes = getPrimes(maxPrime);
+        std::vector<uint64_t> primes;
+        primesieve::generate_primes(max, &primes);
+        const auto count = countSquareRootSmoothNumbers(max, primes);
 
-        const int count = countSquareRootSmoothNumbers(max, primes);
         std::cout << "Answer: " << count << std::endl;
     }
 }
