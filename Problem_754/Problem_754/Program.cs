@@ -40,13 +40,61 @@ static long GaussFactorial(long n)
 {
     long res = 1;
 
+    List<long> primeFactors = PrimeFactors(n);
+    bool[] isCoprime = CoprimeSieve(n, primeFactors);
+
     for (long x = 2; x < n; x++)
     {
-        if (Coprime(n, x))
+        if (isCoprime[x])
         {
             res *= x;
             res %= MODULUS;
         }    
+    }
+
+    return res;
+}
+
+static bool[] PrimeSieve(long n)
+{
+    bool[] res = new bool[n + 1];
+
+    for (long i = 2; i <= n; i++)
+        res[i] = true;
+
+    var pMax = (long)Math.Sqrt(n);
+    for (long i = 2; i <= pMax; i++)
+        for (long j = i * i; j <= n; j += i)
+            res[j] = false;
+
+    return res;
+}
+
+static bool[] CoprimeSieve(long n, List<long> primeFactors)
+{
+    bool[] res = new bool[n];
+
+    for (long x = 0; x < n; x++)
+        res[x] = true;
+
+    foreach (long p in primeFactors)
+        for (long x = 0; x < n; x += p)
+            res[x] = false;
+
+    return res;
+}
+
+static List<long> PrimeFactors(long n)
+{
+    List<long> res = new();
+
+    for (long p = 2; p <= n; p++)
+    {
+        if (n % p == 0)
+            res.Add(p);
+
+        while (n % p == 0)
+            n /= p;
     }
 
     return res;
