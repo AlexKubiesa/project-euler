@@ -26,9 +26,11 @@ static long ProductOfGaussFactorials(int n)
 {
     long res = 1;
 
+    bool[] isPrime = PrimeSieve(n);
+
     for (long i = 1; i <= n; i++)
     {
-        long g_i = GaussFactorial(i);
+        long g_i = GaussFactorial(i, isPrime);
         res *= g_i;
         res %= MODULUS;
     }
@@ -36,11 +38,11 @@ static long ProductOfGaussFactorials(int n)
     return res;
 }
 
-static long GaussFactorial(long n)
+static long GaussFactorial(long n, bool[] isPrime)
 {
     long res = 1;
 
-    List<long> primeFactors = PrimeFactors(n);
+    List<long> primeFactors = PrimeFactors(n, isPrime);
     bool[] isCoprime = CoprimeSieve(n, primeFactors);
 
     for (long x = 2; x < n; x++)
@@ -84,14 +86,16 @@ static bool[] CoprimeSieve(long n, List<long> primeFactors)
     return res;
 }
 
-static List<long> PrimeFactors(long n)
+static List<long> PrimeFactors(long n, bool[] isPrime)
 {
     List<long> res = new();
 
     for (long p = 2; p <= n; p++)
     {
-        if (n % p == 0)
-            res.Add(p);
+        if (!isPrime[p] || (n % p != 0))
+            continue;
+
+        res.Add(p);
 
         while (n % p == 0)
             n /= p;
