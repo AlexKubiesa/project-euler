@@ -43,10 +43,11 @@ static long ProductOfGaussFactorials(int n)
     long res = 1;
 
     bool[] isPrime = PrimeSieve(n);
+    List<long> primes = Primes(isPrime);
 
     for (long m = 1; m <= n; m++)
     {
-        List<long> primeFactors = PrimeFactors(m, isPrime);
+        List<long> primeFactors = PrimeFactors(m, primes);
         bool[] isCoprimeToM = CoprimeSieve(m, primeFactors);
         long exponent = ContributionExponent(m, n, isCoprimeToM);
         long mContribution = Exp(m, exponent);
@@ -77,7 +78,7 @@ static long GaussFactorial(long n, bool[] isPrime)
 {
     long res = 1;
 
-    List<long> primeFactors = PrimeFactors(n, isPrime);
+    List<long> primeFactors = PrimeFactors_FromPrimeSieve(n, isPrime);
     bool[] isCoprime = CoprimeSieve(n, primeFactors);
 
     for (long x = 2; x < n; x++)
@@ -107,6 +108,17 @@ static bool[] PrimeSieve(long n)
     return res;
 }
 
+static List<long> Primes(bool[] isPrime)
+{
+    List<long> primes = new();
+
+    for (long p = 0; p < isPrime.Length; p++)
+        if (isPrime[p])
+            primes.Add(p);
+
+    return primes;
+}
+
 static bool[] CoprimeSieve(long n, List<long> primeFactors)
 {
     bool[] res = new bool[n];
@@ -121,7 +133,28 @@ static bool[] CoprimeSieve(long n, List<long> primeFactors)
     return res;
 }
 
-static List<long> PrimeFactors(long n, bool[] isPrime)
+static List<long> PrimeFactors(long n, List<long> primes)
+{
+    List<long> res = new();
+
+    foreach (long p in primes)
+    {
+        if (p > n)
+            break;
+
+        if (n % p != 0)
+            continue;
+
+        res.Add(p);
+
+        while (n % p == 0)
+            n /= p;
+    }
+
+    return res;
+}
+
+static List<long> PrimeFactors_FromPrimeSieve(long n, bool[] isPrime)
 {
     List<long> res = new();
 
