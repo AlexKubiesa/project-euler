@@ -58,41 +58,6 @@ static long ProductOfGaussFactorials(int n)
     return res;
 }
 
-static long ProductOfGaussFactorials_UsingGaussFactorial(int n)
-{
-    long res = 1;
-
-    bool[] isPrime = PrimeSieve(n);
-
-    for (long i = 1; i <= n; i++)
-    {
-        long g_i = GaussFactorial(i, isPrime);
-        res *= g_i;
-        res %= MODULUS;
-    }
-
-    return res;
-}
-
-static long GaussFactorial(long n, bool[] isPrime)
-{
-    long res = 1;
-
-    List<long> primeFactors = PrimeFactors_FromPrimeSieve(n, isPrime);
-    bool[] isCoprime = CoprimeSieve(n, primeFactors);
-
-    for (long x = 2; x < n; x++)
-    {
-        if (isCoprime[x])
-        {
-            res *= x;
-            res %= MODULUS;
-        }    
-    }
-
-    return res;
-}
-
 static bool[] PrimeSieve(long n)
 {
     bool[] res = new bool[n + 1];
@@ -152,37 +117,6 @@ static List<long> PrimeFactors(long n, List<long> primes)
     }
 
     return res;
-}
-
-static List<long> PrimeFactors_FromPrimeSieve(long n, bool[] isPrime)
-{
-    List<long> res = new();
-
-    for (long p = 2; p <= n; p++)
-    {
-        if (!isPrime[p] || (n % p != 0))
-            continue;
-
-        res.Add(p);
-
-        while (n % p == 0)
-            n /= p;
-    }
-
-    return res;
-}
-
-static bool Coprime(long a, long b) => HCF(a, b) == 1;
-
-/// <summary>
-/// Calculates the highest common factor of a and b. Assumes a and b are non-negative.
-/// </summary>
-static long HCF(long a, long b)
-{
-    while (b != 0)
-        (a, b) = (b, a % b);
-
-    return a;
 }
 
 /// <summary>
